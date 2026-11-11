@@ -1,0 +1,78 @@
+name: SoundMe iOS Framework Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - soundme-development
+    paths:
+      - "iosAppKotlin/**"
+      - "commonUi/**"
+      - "gradle/**"
+      - "build.gradle.kts"
+      - "settings.gradle.kts"
+      - "gradle.properties"
+      - "gradlew"
+      - ".github/workflows/ios-build.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-ios-framework:
+    name: Build SoundMe for iPhone
+    runs-on: macos-15-intel
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Check Xcode
+        run: |
+          xcodebuild -version
+          xcode-select -p
+          java -version
+
+      - name: Build iOS ARM64 framework
+        run: |
+          chmod +x gradlew
+          ./gradlew \
+            -PkmpTargets=all \
+            -PiosAllowUndefined=true \
+            :iosAppKotlin:linkDebugFrameworkIosArm64 \
+            --no-daemon \
+            --stacktrace
+
+      - name: Package framework
+        run: |
+          FRAMEWORK_PATH=$(find iosAppKotlin/build \
+            -type d \
+            -name "YMusicApp.framework" \
+            -print -quit)
+
+          if [ -z "$FRAMEWORK_PATH" ]; then
+            echo "ERROR: YMusicApp.framework tidak ditemukan."
+            exit 1
+          fi
+
+          echo "Framework ditemukan: $FRAMEWORK_PATH"
+
+          tar -czf SoundMe-iOS-Framework.tar.gz \
+            -C "$(dirname "$FRAMEWORK_PATH")" \
+            YMusicApp.framework
+
+      - name: Upload iOS framework
+        uses: actions/upload-artifact@v4
+        with:
+          name: SoundMe-iOS-Framework
+          path: SoundMe-iOS-Framework.tar.gz
+          if-no-files-found: error
+          retention-days: 7
