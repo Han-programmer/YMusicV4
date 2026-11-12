@@ -41,6 +41,7 @@ jobs:
         run: |
           xcodebuild -version
           xcode-select -p
+          xcodebuild -list -project iosApp/iosApp.xcodeproj
           java -version
 
       - name: Build unsigned iOS application
