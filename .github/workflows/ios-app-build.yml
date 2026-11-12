@@ -50,7 +50,7 @@ jobs:
 
           xcodebuild \
             -project iosApp/iosApp.xcodeproj \
-            -target iosApp \
+            -scheme iosApp \
             -configuration Debug \
             -sdk iphoneos \
             -derivedDataPath "$RUNNER_TEMP/SoundMeDerivedData" \
