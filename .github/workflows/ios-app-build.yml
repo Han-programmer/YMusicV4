@@ -58,7 +58,12 @@ jobs:
 
       - name: Locate application
         run: |
-          APP_PATH="$RUNNER_TEMP/SoundMeDerivedData/Build/Products/Debug-iphoneos/iosApp.app"
+      - name: Verify Xcode
+        run: |
+          xcodebuild -version
+          xcode-select -p
+          xcodebuild -list -project iosApp/iosApp.xcodeproj
+          java -version          APP_PATH="$RUNNER_TEMP/SoundMeDerivedData/Build/Products/Debug-iphoneos/iosApp.app"
 
           if [ ! -d "$APP_PATH" ]; then
             echo "ERROR: iosApp.app tidak ditemukan"
