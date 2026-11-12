@@ -1,0 +1,72 @@
+
+name: SoundMe iOS App Build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-ios-app:
+    name: Build SoundMe.app
+    runs-on: macos-15-intel
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Verify Xcode
+        run: |
+          xcodebuild -version
+          xcode-select -p
+          java -version
+
+      - name: Build unsigned iOS application
+        run: |
+          chmod +x gradlew
+
+          xcodebuild \
+            -project iosApp/iosApp.xcodeproj \
+            -target iosApp \
+            -configuration Debug \
+            -sdk iphoneos \
+            -derivedDataPath "$RUNNER_TEMP/SoundMeDerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Locate application
+        run: |
+          APP_PATH="$RUNNER_TEMP/SoundMeDerivedData/Build/Products/Debug-iphoneos/iosApp.app"
+
+          if [ ! -d "$APP_PATH" ]; then
+            echo "ERROR: iosApp.app tidak ditemukan"
+            exit 1
+          fi
+
+          echo "Application ditemukan:"
+          ls -lah "$APP_PATH"
+
+      - name: Package application
+        run: |
+          cd "$RUNNER_TEMP/SoundMeDerivedData/Build/Products/Debug-iphoneos"
+
+          ditto -c -k --sequesterRsrc --keepParent \
+            iosApp.app \
+            SoundMe-iOS-App.zip
+
+      - name: Upload application artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SoundMe-iOS-App-Unsigned
+          path: ${{ runner.temp }}/SoundMeDerivedData/Build/Products/Debug-iphoneos/SoundMe-iOS-App.zip
+          if-no-files-found: error
+          retention-days: 7
