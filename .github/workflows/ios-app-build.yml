@@ -3,6 +3,19 @@ name: SoundMe iOS App Build
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - soundme-development
+    paths:
+      - ".github/workflows/ios-app-build.yml"
+      - "iosApp/**"
+      - "iosAppKotlin/**"
+      - "commonUi/**"
+      - "gradle/**"
+      - "gradle.properties"
+      - "gradlew"
+      - "build.gradle.kts"
+      - "settings.gradle.kts"
 
 permissions:
   contents: read
