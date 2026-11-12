@@ -38,6 +38,10 @@ jobs:
           cache: gradle
 
       - name: Verify Xcode
+        run: |
+          xcodebuild -version
+          xcode-select -p
+          java -version
 
       - name: Build unsigned iOS application
         run: |
@@ -45,7 +49,7 @@ jobs:
 
           xcodebuild \
             -project iosApp/iosApp.xcodeproj \
-            -scheme iosApp \
+            -target iosApp \
             -configuration Debug \
             -sdk iphoneos \
             -derivedDataPath "$RUNNER_TEMP/SoundMeDerivedData" \
